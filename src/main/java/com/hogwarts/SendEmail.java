@@ -6,7 +6,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.ByteArrayInputStream;
+import javax.mail.util.ByteArrayDataSource;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -55,7 +55,7 @@ public class SendEmail {
 
             //From / To
             mimeMessage.setFrom(new InternetAddress(correoEnvia));
-            mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(nombreCliente));
+            mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(destinatario));
 
             //Asunto
             mimeMessage.setSubject("Bienvenido/a a nuestra app, " + nombreCliente + "!!", StandardCharsets.UTF_8.name());
@@ -73,7 +73,7 @@ public class SendEmail {
                         </p>
                       </body>
                     </html>
-                    """.formatted(nombreCliente);
+                    """.formatted(escapeHtml(nombreCliente));
 
             MimeBodyPart parteHTML = new MimeBodyPart();
             parteHTML.setContent(html, "text/html; charset=utf-8");
@@ -82,29 +82,36 @@ public class SendEmail {
             MimeBodyPart imagenAdjunta = new MimeBodyPart();
 
             byte[] imagenBytes = leerRecursoComoBytes("/bienvenida.png");
-            if(imagenBytes != null){
+            if(imagenBytes == null){
                 System.err.println("No se ha encontrado el recurso /bienvenida.png en src/main/resources.");
                 return;
             }
 
-            ByteArrayInputStream dataSource = new ByteArrayInputStream(imagenBytes);
+            ByteArrayDataSource dataSource = new ByteArrayDataSource(imagenBytes, "image/png");
             imagenAdjunta.setDataHandler(new DataHandler(dataSource));
-            imagenAdjunta.setFileName("bienvenida.png"); //nombre del adjunto en el correo
+            imagenAdjunta.setFileName("bienvenida.png");
 
-            //Multipart final
             Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(imagenAdjunta);
             multipart.addBodyPart(parteHTML);
+            multipart.addBodyPart(imagenAdjunta);
 
             mimeMessage.setContent(multipart);
 
-            //Transportar
+            //transportar
             Transport.send(mimeMessage);
             System.out.println("Correo de bienvenida enviado a " +destinatario+ " desde " +correoEnvia);
 
         } catch (Exception ex) {
             System.err.println("Error enviando el correo: " + ex.getMessage());
         }
+    }
+
+    private static String escapeHtml(String s) {
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private static byte[] leerRecursoComoBytes(String rutaRecurso) {
