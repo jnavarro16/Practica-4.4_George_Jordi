@@ -14,11 +14,11 @@ import java.util.Properties;
 
 public class SendEmail {
 
-//    String password = "vknp ayfj ffms czhq";
-//        String correoEnvia = "mr.georgemanea@gmail.com";
-//        String claveCorreo = password;
-    //                    new InternetAddress("mr.georgemanea@gmail.com"),
-//                    new InternetAddress("merticsebastian@gmail.com")};
+/*Ejecutamos el programa añadiendo en run-configurations las variables de entorno que seria:
+    SMTP_USER=(correo)
+    SMTP_PASS=(contraseña)
+*/
+
 
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587";
